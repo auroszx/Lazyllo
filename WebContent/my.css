@@ -1,0 +1,147 @@
+#title, #subtitle, .mybutton {
+	text-align: center;
+}
+
+.signup {
+	float: left;
+	margin-left: 20%;
+}
+
+.login {
+	float: right;
+	margin-right: 20%;
+}
+
+body {
+	background-image: url("img/bg.jpg");
+	background-position: 50% 50%;
+	font-family: Arial;
+}
+
+label {
+    display: inline-block;
+}
+
+input {
+  	display: inline-block;
+  	float: right;
+}
+
+#boardlist {
+	margin: 5% 5% 5% 5%;
+	width: 90%;
+	height: 90%;
+	border-color: black;
+	border-style: dotted;
+	border-width: 5px;
+}
+
+#boardlist * {
+	margin: 1% 1% 1% 1%;
+	overflow: hidden;
+	height: auto;
+	display: inline-block;
+}
+
+.card {
+    border-radius: 5px;
+	padding: 10px 10px 10px 10px;
+	width: 15%;
+	min-height: 15%;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+	background-color: white;
+	opacity: 0.8;
+	float: left; /*This is the magic. */
+}
+
+.card:hover {
+    box-shadow: 0 12px 24px 0 rgba(0,0,0,0.2);
+	opacity: 1.0;
+}
+
+.edit, .erase {
+    cursor: pointer;
+    float: right;
+    text-decoration: none;
+    color: black;
+    font-size: 20px;
+}
+
+/* ----------- Button CSS here ----------- */
+.container {
+    display: table;
+    width: 100%;
+    height: 100%;
+}
+
+.interior {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+}
+
+.btn {
+    background-color: #fff;
+    padding: 1em 3em;
+    border-radius: 3px;
+    text-decoration: none;
+}
+
+
+/* ----------- Modal CSS here ----------- */
+
+ .modal-window {
+    position: fixed;
+    background-color: rgba(0, 0, 0, 0.15);
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    transition: all 0.3s;
+}
+
+.modal-window:target {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-window>div {
+    border-radius: 5px;
+    width: 400px;
+    position: relative;
+    margin: 10% auto;
+    padding: 2rem;
+    background: #fff;
+    color: #444;
+}
+
+.modal-window header {
+    font-weight: bold;
+}
+
+.modal-close {
+    color: #aaa;
+    line-height: 50px;
+    font-size: 80%;
+    position: absolute;
+    right: 0;
+    text-align: center;
+    top: 0;
+    width: 70px;
+    text-decoration: none;
+}
+
+.modal-close:hover {
+    color: #000;
+}
+
+.modal-window h1 {
+    font-size: 150%;
+    margin: 0 0 15px;
+}

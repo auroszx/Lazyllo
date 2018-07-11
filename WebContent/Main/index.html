@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Lazyllo: A Trello Project | Main</title>
+<link rel="stylesheet" href="../my.css">
+<script type="text/javascript" src="../js/xhr.js"></script>
+<script type="text/javascript" src="../js/main.js"></script>
+</head>
+<body onload="getBoards()">
+	<h1 id="title">Lazyllo</h1>
+	<h4 id="subtitle">A Trello Project</h4>
+	
+	<h4 id="module" style="text-align: center;">Boards</h4><br>
+
+	<div class="container">
+	  	<div class="interior">
+	    	<a id="createbtn" class="btn" href="#create-board">Create board</a>
+	    	<a class="btn" onclick="logout()">Logout</a>
+	  	</div>
+	</div>
+
+	<div id="boardlist">
+		<!--
+		<div class="card">
+		  	<img src="img_avatar.png" alt="Avatar" style="width:100%">
+		  	<div class="cardcontent">
+		    		<h4><b>Board title</b></h4>
+		    		<p>Author</p>
+		  	</div>
+		</div> 
+		-->
+
+		<div style="height: auto;"></div>
+	</div>
+
+	<!--
+	<button id="logout" onclick="logout()">Logout</button>
+	-->
+	
+
+	<!-- Create board modal -->
+	<div id="create-board" class="modal-window">
+	  	<div>
+	    	<a href="#modal-close" title="Close" class="modal-close">Close</a>
+	    	<h1>Create board</h1>
+	    	<form id="createboard" enctype="multipart/form-data">
+				Board name <input id="name" type="text" name="board_name">
+	       		<br />
+	       		<br />
+		    </form>
+		    <div class="container">
+			  	<div class="interior" onclick="createBoard()">
+			  		<br>
+			    	<a class="btn" href="#modal-close">Create</a>
+			  	</div>
+			</div>
+	    </div>
+	</div>
+
+	<!-- Create column modal -->
+	<div id="create-column" class="modal-window">
+	  	<div>
+	    	<a href="#modal-close" title="Close" class="modal-close">Close</a>
+	    	<h1>Create column</h1>
+	    	<form id="createcolumn" enctype="multipart/form-data">
+				Column name <input id="name" type="text" name="column_name">
+	       		<br />
+	       		<br />
+		    </form>
+		    <div class="container">
+			  	<div class="interior" onclick="createColumn()">
+			  		<br>
+			    	<a class="btn" href="#modal-close">Create</a>
+			  	</div>
+			</div>
+	    </div>
+	</div>
+
+	<!-- Edit board modal -->
+	<div id="edit-board" class="modal-window">
+	  	<div>
+	    	<a href="#modal-close" title="Close" class="modal-close">Close</a>
+	    	<h1>Edit board</h1>
+	    	<form id="editboard" enctype="multipart/form-data">
+				Board name <input id="edit_name" type="text" name="board_name">
+	       		<br />
+	       		<br />
+		    </form>
+		    <div class="container">
+			  	<div class="interior" onclick="editBoard()">
+			  		<br>
+			    	<a class="btn" href="#modal-close">Edit</a>
+			  	</div>
+			</div>
+	    </div>
+	</div>
+
+	<!-- Edit column modal -->
+	<div id="edit-column" class="modal-window">
+	  	<div>
+	    	<a href="#modal-close" title="Close" class="modal-close">Close</a>
+	    	<h1>Edit column</h1>
+	    	<form id="editcolumn" enctype="multipart/form-data">
+				Column name <input id="edit_cname" type="text" name="column_name">
+	       		<br />
+	       		<br />
+		    </form>
+		    <div class="container">
+			  	<div class="interior" onclick="editColumn()">
+			  		<br>
+			    	<a class="btn" href="#modal-close">Edit</a>
+			  	</div>
+			</div>
+	    </div>
+	</div>
+
+
+</body>
+</html>
