@@ -22,7 +22,7 @@ label {
     display: inline-block;
 }
 
-input {
+input, select {
   	display: inline-block;
   	float: right;
 }

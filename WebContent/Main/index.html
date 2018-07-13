@@ -16,6 +16,7 @@
 	<div class="container">
 	  	<div class="interior">
 	    	<a id="createbtn" class="btn" href="#create-board">Create board</a>
+	    	<a id="permbtn" class="btn" href="#board-perm">Board permissions</a>
 	    	<a class="btn" onclick="logout()">Logout</a>
 	  	</div>
 	</div>
@@ -142,11 +143,38 @@
 	  	<div>
 	    	<a href="#modal-close" title="Close" class="modal-close">Close</a>
 	    	<h1>Edit card</h1>
-	    	<form id="editcolumn" enctype="multipart/form-data">
+	    	<form id="editcard" enctype="multipart/form-data">
 				Card name <input id="edit_caname" type="text" name="card_name">
 	       		<br />
 	       		<br />
 	       		Card description <input id="edit_cades" type="text" name="card_description">
+	       		<br />
+	       		<br />
+		    </form>
+		    <div class="container">
+			  	<div class="interior" onclick="editCard()">
+			  		<br>
+			    	<a class="btn" href="#modal-close">Edit</a>
+			  	</div>
+			</div>
+	    </div>
+	</div>
+
+	<!-- Board permission modal -->
+	<div id="board-perm" class="modal-window">
+	  	<div>
+	    	<a href="#modal-close" title="Close" class="modal-close">Close</a>
+	    	<h1>Change board permissions</h1>
+	    	<form id="boardperm" enctype="multipart/form-data">
+				Username <input id="perm_username" type="text" name="perm_username">
+	       		<br />
+	       		<br />
+	       		Permission 
+	       		<select id="perm_type" name="perm_type">
+	       			<option value="1">Board Master</option>
+	       			<option value="2">Collaborator</option>
+	       		</select>
+
 	       		<br />
 	       		<br />
 		    </form>

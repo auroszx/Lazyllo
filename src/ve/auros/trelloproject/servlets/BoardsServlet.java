@@ -81,54 +81,65 @@ public class BoardsServlet extends HttpServlet {
 		dbc = new DBConnection(pr.getValue("pgurl"), pr.getValue("pguser"), pr.getValue("pgpass"), pr.getValue("driver"));
 		dbc.connect();
 		
-		while (parameters.hasMoreElements()) {
-			param = (String) parameters.nextElement();
-			System.out.println(request.getParameterValues(param)[0]);
-			System.out.println(param);
-			myVars.add(request.getParameterValues(param)[0]);
-		}
-		System.out.println(session.getAttribute("user_id"));
-		myVars.add(Integer.parseInt((String) session.getAttribute("user_id")));
-		myVars.add(ts);
-		
-		System.out.println(myVars);
-		response.setContentType("application/json");
-		response.setCharacterEncoding("UTF-8");
-		if (dbc.execute(pr.getValue("createboard"), myVars.toArray())) {
-			myVars.remove(1);
-			if (dbc.execute(pr.getValue("getboardid"), myVars.toArray())) {
-				myVars = new ArrayList<Object>();
-				myVars.add(dbc.getTable().getJSONObject(0).getInt("board_id"));
-				myVars.add(Integer.parseInt((String) session.getAttribute("user_id")));
-				myVars.add(Integer.parseInt((String) session.getAttribute("type_id")));
-				if (dbc.execute(pr.getValue("setboardperm"), myVars.toArray())) { 
-					json.put("status", 200)
-						.put("msg", "Board created successfully")
-						/*.put("redirect", "/TrelloProject/Main/")*/;
-					out.print(json.toString());
-				}
-				//Deletion should happen in case of failure?
-				else {
-					json.put("status", 500)
-						.put("msg", "Error setting board permissions")
-						/*.put("redirect", "/TrelloProject/Main/")*/;
-					out.print(json.toString());
-				}
-			}
-			else {
-				//Deletion should happen in case of failure?
-				json.put("status", 500)
-					.put("msg", "Error getting board info for permissions")
-					/*.put("redirect", "/TrelloProject/Main/")*/;
-				out.print(json.toString());
-			}
+		if (request.getPathInfo().substring(1, request.getPathInfo().length()) == "setperm") {
+			int board_id = Integer.parseInt(request.getParameter("board_id"));
+			String perm_username = request.getParameter("perm_username");
+			String perm_type = request.getParameter("perm_type");
 			
+			//KEEP WORKING HERE
 		}
 		else {
-			json.put("status",  500)
-				.put("msg", "Error creating a new board");
-			out.print(json.toString());
+			while (parameters.hasMoreElements()) {
+				param = (String) parameters.nextElement();
+				System.out.println(request.getParameterValues(param)[0]);
+				System.out.println(param);
+				myVars.add(request.getParameterValues(param)[0]);
+			}
+			System.out.println(session.getAttribute("user_id"));
+			myVars.add(Integer.parseInt((String) session.getAttribute("user_id")));
+			myVars.add(ts);
+			
+			System.out.println(myVars);
+			response.setContentType("application/json");
+			response.setCharacterEncoding("UTF-8");
+			if (dbc.execute(pr.getValue("createboard"), myVars.toArray())) {
+				myVars.remove(1);
+				if (dbc.execute(pr.getValue("getboardid"), myVars.toArray())) {
+					myVars = new ArrayList<Object>();
+					myVars.add(dbc.getTable().getJSONObject(0).getInt("board_id"));
+					myVars.add(Integer.parseInt((String) session.getAttribute("user_id")));
+					myVars.add(Integer.parseInt((String) session.getAttribute("type_id")));
+					if (dbc.execute(pr.getValue("setboardperm"), myVars.toArray())) { 
+						json.put("status", 200)
+							.put("msg", "Board created successfully")
+							/*.put("redirect", "/TrelloProject/Main/")*/;
+						out.print(json.toString());
+					}
+					//Deletion should happen in case of failure?
+					else {
+						json.put("status", 500)
+							.put("msg", "Error setting board permissions")
+							/*.put("redirect", "/TrelloProject/Main/")*/;
+						out.print(json.toString());
+					}
+				}
+				else {
+					//Deletion should happen in case of failure?
+					json.put("status", 500)
+						.put("msg", "Error getting board info for permissions")
+						/*.put("redirect", "/TrelloProject/Main/")*/;
+					out.print(json.toString());
+				}
+				
+			}
+			else {
+				json.put("status",  500)
+					.put("msg", "Error creating a new board");
+				out.print(json.toString());
+			}
 		}
+		
+		
 		
 		
 		

@@ -225,6 +225,7 @@ function editBoard() {
 //Gets columns for a board
 function getColumns(board_id) {
 	var boardlist = document.getElementById("boardlist");
+	localstorage.setItem("board_id", board_id);
 
 	xhr("GET", "", "/TrelloProject/Main/Data/ColumnsServlet/"+board_id, function(res) {
 		var data = JSON.parse(res);
@@ -412,4 +413,12 @@ function editCard() {
 	var card_name = document.getElementById("edit_caname").value;
 	var card_id = refid;
 	xhr("PUT", "", "/TrelloProject/Main/Data/CardsServlet/edit?card_id="+card_id+"&card_name="+card_name+"&card_description="+card_description, handleResponse);
+}
+
+//Sets board permissions.
+function setBoardPerm() {
+	var boardperm = document.getElementById("boardperm");
+	var fd = new FormData(boardperm);
+	fd.append("board_id", localStorage.getItem("board_id"));
+	xhr("POST", fd, "/TrelloProject/BoardsServlet/setperm", handleResponse);
 }

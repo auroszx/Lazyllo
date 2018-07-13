@@ -77,8 +77,6 @@ public class CardsServlet extends HttpServlet {
 		HttpServletRequest request = (HttpServletRequest) req;
 		PrintWriter out = response.getWriter();
 		JSONObject json = new JSONObject();
-		//Enumeration<String> parameters = request.getParameterNames();
-		//String param = null;
 		DBConnection dbc;
 		PropertiesReader pr = PropertiesReader.getInstance();
 		ArrayList<Object> myVars = new ArrayList<Object>();
@@ -87,12 +85,7 @@ public class CardsServlet extends HttpServlet {
 		dbc = new DBConnection(pr.getValue("pgurl"), pr.getValue("pguser"), pr.getValue("pgpass"), pr.getValue("driver"));
 		dbc.connect();
 		
-		/*while (parameters.hasMoreElements()) {
-			param = (String) parameters.nextElement();
-			System.out.println(request.getParameterValues(param)[0]);
-			System.out.println(param);
-			myVars.add(request.getParameterValues(param)[0]);
-		}*/
+		
 		myVars.add(Integer.parseInt(request.getParameter("column_id")));
 		myVars.add(Integer.parseInt((String) session.getAttribute("user_id")));
 		myVars.add(request.getParameter("card_name"));
