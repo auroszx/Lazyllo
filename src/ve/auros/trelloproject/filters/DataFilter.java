@@ -94,6 +94,7 @@ public class DataFilter implements Filter {
 				}
 			}
 			else {
+				System.out.println("Request URI: "+request.getRequestURI());
 				chain.doFilter(req, res);
 			}
 			

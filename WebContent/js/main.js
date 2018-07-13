@@ -10,12 +10,21 @@ var refid;
 //////////////////////////////////////////////////////////////////////////////////
 
 
-//Detect clicks on boards and cards.
+//Detect clicks on boards, columns and cards.
 document.onclick = function(e) {
+	// console.log(e.target.parentElement);
+	// console.log(e.target.parentElement.parentElement.getAttribute("class"));
+	// console.log(e.target.getAttribute("class"));
+	
 	//Clicked the content.
 	if (e.target.getAttribute("class") == "card" || e.target.getAttribute("class") == "cardcontent") {
 	  refid = e.target.getAttribute("refid");
+	  console.log("Getting columns...");
 	  getColumns(refid);
+	}
+	//Clicked the create card button.
+	if (e.target.parentElement.getAttribute("class") == "card column" && e.target.getAttribute("class") == "create-card") {
+	  refid = e.target.parentElement.getAttribute("refid");
 	}
 	//Clicked the delete button.
 	if (e.target.getAttribute("class") == "erase") {
@@ -26,15 +35,42 @@ document.onclick = function(e) {
 	  else if (e.target.parentElement.getAttribute("type") == "column") {
 	  	deleteColumn(refid);
 	  }
+	  else if (e.target.parentElement.getAttribute("type") == "card") {
+	  	deleteCard(refid);
+	  }
 	  
 	}
 	//Clicked the edit button.
 	if (e.target.getAttribute("class") == "edit") {
-	  refid = e.target.parentElement.getAttribute("refid");
-	  var bname = e.target.parentElement.childNodes[2].childNodes[0].childNodes[0].innerHTML;
-	  console.log(bname);
-	  var edit_board_name = document.getElementById("edit_name");
-	  edit_board_name.value = bname;
+		//For boards.
+		if (e.target.parentElement.getAttribute("type") == "board") {
+		  refid = e.target.parentElement.getAttribute("refid");
+		  var bname = e.target.parentElement.childNodes[2].childNodes[0].childNodes[0].innerHTML;
+		  console.log(bname);
+		  var edit_board_name = document.getElementById("edit_name");
+		  edit_board_name.value = bname;
+		}
+		//For columns.
+		else if (e.target.parentElement.getAttribute("type") == "column") {
+			refid = e.target.parentElement.getAttribute("refid");
+			var bname = e.target.parentElement.childNodes[3].childNodes[0].innerText;
+			console.log(bname);
+			var edit_board_name = document.getElementById("edit_cname");
+			edit_board_name.value = bname;
+		}
+		//For cards.
+		else if (e.target.parentElement.getAttribute("type") == "card") {
+			refid = e.target.parentElement.getAttribute("refid");
+			var bname = e.target.parentElement.childNodes[3].childNodes[0].innerText;
+			console.log(bname);
+			var edit_board_name = document.getElementById("edit_caname");
+			edit_board_name.value = bname;
+
+			var bdes = e.target.parentElement.childNodes[3].childNodes[2].innerText;
+			console.log(bdes);
+			var edit_board_des = document.getElementById("edit_cades");
+			edit_board_des.value = bdes;
+		}
 	}
 }
 
@@ -105,6 +141,10 @@ function maintest() {
 function getBoards() {
 	var boardlist = document.getElementById("boardlist");
 
+	while (boardlist.firstChild) {
+	    boardlist.removeChild(boardlist.firstChild);
+	}
+
 	xhr("GET", "", "/TrelloProject/BoardsServlet", function(res) {
 		var data = JSON.parse(res);
 		var boards = data.boards;
@@ -155,29 +195,31 @@ function getBoards() {
 function createBoard() {
 	var createboard = document.getElementById("createboard");
 	var fd = new FormData(createboard);
-	xhr("POST", fd, "/TrelloProject/BoardsServlet", handleResponse);
+	xhr("POST", fd, "/TrelloProject/BoardsServlet", function() {
+		handleResponse;
+		getBoards();
+
+	});
 }
 
 //Deletes a boards using its id sabed in attribute.
 function deleteBoard(board_id) {
-	xhr("DELETE", "", "/TrelloProject/BoardsServlet/"+board_id, handleResponse);
+	xhr("DELETE", "", "/TrelloProject/BoardsServlet/"+board_id, function() {
+		handleResponse;
+		getBoards();
+
+	});
 }
 
 //Edits the board using it's id and parameters to be updated.
 function editBoard() {
 	var board_name = document.getElementById("edit_name").value;
 	var board_id = refid;
-	xhr("PUT", "", "/TrelloProject/BoardsServlet/edit?board_id="+board_id+"&board_name="+board_name, handleResponse);
-}
+	xhr("PUT", "", "/TrelloProject/BoardsServlet/edit?board_id="+board_id+"&board_name="+board_name, function() {
+		handleResponse;
+		getBoards();
 
-//Gets all data from a board. Has permission verification. Data is shown in the same place.
-function getBoardData() {
-	var f = document.createElement("FORM");
-	f.enctype = "multipart/form-data"; //Very sketchy.
-	var fd = new FormData(f);
-	fd.append("board_id", refid);
-
-	xhr("POST", fd, "/TrelloProject/CardsServlet", handleResponse);
+	});
 }
 
 //Gets columns for a board
@@ -194,9 +236,11 @@ function getColumns(board_id) {
 		}
 
 		for (var i in columns) {
+			console.log("Creating column #", i);
+
 
 			var boarddiv = document.createElement("div");
-			boarddiv.setAttribute("class", "card");
+			boarddiv.setAttribute("class", "card column");
 			boarddiv.setAttribute("type", "column");
 
 			var boarddivcontent = document.createElement("div");
@@ -217,24 +261,103 @@ function getColumns(board_id) {
 			a1.setAttribute("href", "#edit-column");
 			boarddiv.appendChild(a1);
 
-			/*var a3 = document.createElement("a");
+			var a3 = document.createElement("a");
 			a3.innerHTML = "&#x271A";
 			a3.setAttribute("class", "create-card");
 			a3.setAttribute("href", "#create-card");
-			boarddiv.appendChild(a3);*/
-
-
-			//var p = document.createElement("p");
-			//p.innerHTML = "Created: "+columns[i].board_created_at;
+			boarddiv.appendChild(a3);
 
 			boarddiv.setAttribute("refid", columns[i].column_id);
 			boarddivcontent.setAttribute("refid", columns[i].column_id);
 
-			//boarddivcontent.appendChild(p);
+			var spacer = document.createElement("br");
+
+			
 			boarddiv.appendChild(boarddivcontent);
-			boardlist.appendChild(boarddiv);
+			boardlist.appendChild(boarddiv);	
+
+			//console.log(boarddiv);		
 			
 		}
+
+
+		xhr("GET", "", "/TrelloProject/Main/Data/CardsServlet/", function(res) {
+
+			var data = JSON.parse(res);
+			var cards = data.cards;
+			handleResponse(res);
+
+			if (cards.length != undefined || cards.length > 0) {
+
+				for (var i in boardlist.childNodes) {
+					if (i < boardlist.childNodes.length) {
+						var col_id = boardlist.childNodes[i].attributes[2].nodeValue;
+
+
+						//Create cards inside column
+						for (var j in cards) {
+							if (cards[j].column_id == col_id) {
+
+								console.log("Column #", col_id, "with card #", cards[j].card_id);
+
+								var columns = document.getElementsByClassName("card column");
+
+
+								var boarddivcontent = boardlist.childNodes[i];
+								//console.log(boarddivcontent);
+
+								var boarddiv2 = document.createElement("div");
+								boarddiv2.setAttribute("class", "card realcard");
+								boarddiv2.setAttribute("type", "card");
+
+								var boarddivcontent2 = document.createElement("div");
+								boarddivcontent2.setAttribute("class", "cardcontent");
+								boarddivcontent2.setAttribute("type", "card");
+								var h4_2 = document.createElement("h4");
+								h4_2.innerHTML = "<b>"+cards[j].card_name+"</b>";
+								boarddivcontent2.appendChild(h4_2);
+
+								var simplespacer = document.createElement("br");
+								boarddivcontent2.appendChild(simplespacer);
+
+								var p_2 = document.createElement("p");
+								p_2.innerHTML = ""+cards[j].card_description+"";
+								boarddivcontent2.appendChild(p_2);
+
+								var a2_2 = document.createElement("a");
+								a2_2.innerHTML = "&#x2716";
+								a2_2.setAttribute("class", "erase");
+								boarddiv2.appendChild(a2_2);
+
+								var a1_2 = document.createElement("a");
+								a1_2.innerHTML = "&#x270D";
+								a1_2.setAttribute("class", "edit");
+								a1_2.setAttribute("href", "#edit-card");
+								boarddiv2.appendChild(a1_2);
+
+								var a3_2 = document.createElement("a");
+								a3_2.innerHTML = "&#x271A";
+								a3_2.setAttribute("class", "create-card");
+								a3_2.setAttribute("href", "#create-card");
+								boarddiv2.appendChild(a3_2);
+
+								boarddiv2.setAttribute("refid", cards[j].card_id);
+								boarddivcontent2.setAttribute("refid", cards[j].card_id);
+
+								boarddiv2.appendChild(boarddivcontent2);
+								boarddivcontent.appendChild(boarddiv2);
+								
+
+							}
+						}
+
+							
+						
+					}
+				}
+			}//End of if.
+
+		});
 
 		var createbtn = document.getElementById("createbtn");
 		createbtn.innerHTML = "Create column";
@@ -268,64 +391,25 @@ function editColumn() {
 	xhr("PUT", "", "/TrelloProject/Main/Data/ColumnsServlet/edit?column_id="+column_id+"&column_name="+column_name, handleResponse);
 }
 
-//Gets cards for a column
-function getColumns(column_id) {
-	var boardlist = document.getElementById("boardlist");
-
-	xhr("GET", "", "/TrelloProject/Main/Data/CardsServlet/"+column_id, function(res) {
-		var data = JSON.parse(res);
-		var columns = data.columns;
-		handleResponse(res);
-
-		while (boardlist.firstChild) {
-		    boardlist.removeChild(boardlist.firstChild);
-		}
-
-		for (var i in columns) {
-
-			var boarddiv = document.createElement("div");
-			boarddiv.setAttribute("class", "card");
-			boarddiv.setAttribute("type", "column");
-
-			var boarddivcontent = document.createElement("div");
-			boarddivcontent.setAttribute("class", "cardcontent");
-			boarddivcontent.setAttribute("type", "column");
-			var h4 = document.createElement("h4");
-			h4.innerHTML = "<b>"+columns[i].column_name+"</b>";
-			boarddivcontent.appendChild(h4);
-
-			var a2 = document.createElement("a");
-			a2.innerHTML = "&#x2716";
-			a2.setAttribute("class", "erase");
-			boarddiv.appendChild(a2);
-
-			var a1 = document.createElement("a");
-			a1.innerHTML = "&#x270D";
-			a1.setAttribute("class", "edit");
-			a1.setAttribute("href", "#edit-column");
-			boarddiv.appendChild(a1);
+//Creates a new column inside the board.
+function createCard() {
+	var createcard = document.getElementById("createcard");
+	var fd = new FormData(createcard);
+	fd.append("column_id", refid);
+	xhr("POST", fd, "/TrelloProject/Main/Data/CardsServlet", handleResponse);
+}
 
 
-			//var p = document.createElement("p");
-			//p.innerHTML = "Created: "+columns[i].board_created_at;
+//Deletes a card. Of course.
+function deleteCard(card_id) {
+	console.log("Card ID: ", card_id);
+	xhr("DELETE", "", "/TrelloProject/Main/Data/CardsServlet/"+card_id, handleResponse);
+}
 
-			boarddiv.setAttribute("refid", columns[i].column_id);
-			boarddivcontent.setAttribute("refid", columns[i].column_id);
-
-			//boarddivcontent.appendChild(p);
-			boarddiv.appendChild(boarddivcontent);
-			boardlist.appendChild(boarddiv);
-			
-		}
-
-		var createbtn = document.getElementById("createbtn");
-		createbtn.innerHTML = "Create column";
-		createbtn.setAttribute("href", "#create-column");
-
-		var module = document.getElementById("module");
-		module.innerHTML = "<a href='/TrelloProject/Main/'>"+module.innerHTML+"</a>";
-		module.innerHTML = module.innerHTML+" > Board info"; //Needs tweaking
-
-
-	});
+//Edits a column using its id.
+function editCard() {
+	var card_description = document.getElementById("edit_cades").value;
+	var card_name = document.getElementById("edit_caname").value;
+	var card_id = refid;
+	xhr("PUT", "", "/TrelloProject/Main/Data/CardsServlet/edit?card_id="+card_id+"&card_name="+card_name+"&card_description="+card_description, handleResponse);
 }

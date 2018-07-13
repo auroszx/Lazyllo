@@ -60,12 +60,26 @@ input {
 	opacity: 1.0;
 }
 
-.edit, .erase {
+.edit, .erase, .create-card {
     cursor: pointer;
     float: right;
     text-decoration: none;
     color: black;
     font-size: 20px;
+}
+
+.column {
+    background-color: gray;
+    width: 25%;
+}
+
+.column .cardcontent {
+    width: 100%;
+}
+
+.realcard {
+    clear: both;
+    width: 90%;
 }
 
 /* ----------- Button CSS here ----------- */

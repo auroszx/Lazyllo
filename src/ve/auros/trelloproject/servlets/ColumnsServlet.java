@@ -48,10 +48,13 @@ public class ColumnsServlet extends HttpServlet {
 		dbc.connect();
 		
 		String board_id = request.getPathInfo().substring(1, request.getPathInfo().length());
+		System.out.println("Board ID for columns: "+request.getPathInfo().substring(1, request.getPathInfo().length()));
+		
+		response.setContentType("application/json");
+		response.setCharacterEncoding("UTF-8");
 		
 		if (dbc.execute(pr.getValue("getcolumns"), Integer.parseInt(board_id))) {
-			response.setContentType("application/json");
-			response.setCharacterEncoding("UTF-8");
+			
 			System.out.println("Columns requested.");
 			System.out.println(dbc.getTable());
 			json.put("status", 200)
@@ -59,6 +62,13 @@ public class ColumnsServlet extends HttpServlet {
 				.put("columns", dbc.getTable());
 			out.print(json.toString());
 			System.out.println("Columns sent.");
+		}
+		else {
+			json.put("status", 500)
+				.put("msg", "Could not return columns.")
+				.put("columns", dbc.getTable());
+			out.print(json.toString());
+			System.out.println("Couldn't send columns.");
 		}
 	}
 

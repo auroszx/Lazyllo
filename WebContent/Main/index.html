@@ -77,6 +77,28 @@
 	    </div>
 	</div>
 
+	<!-- Create card modal -->
+	<div id="create-card" class="modal-window">
+	  	<div>
+	    	<a href="#modal-close" title="Close" class="modal-close">Close</a>
+	    	<h1>Create column</h1>
+	    	<form id="createcard" enctype="multipart/form-data">
+				Card name <input id="name" type="text" name="card_name">
+	       		<br />
+	       		<br />
+	       		Card description <input id="name" type="text" name="card_description">
+	       		<br />
+	       		<br />
+		    </form>
+		    <div class="container">
+			  	<div class="interior" onclick="createCard()">
+			  		<br>
+			    	<a class="btn" href="#modal-close">Create</a>
+			  	</div>
+			</div>
+	    </div>
+	</div>
+
 	<!-- Edit board modal -->
 	<div id="edit-board" class="modal-window">
 	  	<div>
@@ -108,6 +130,28 @@
 		    </form>
 		    <div class="container">
 			  	<div class="interior" onclick="editColumn()">
+			  		<br>
+			    	<a class="btn" href="#modal-close">Edit</a>
+			  	</div>
+			</div>
+	    </div>
+	</div>
+
+	<!-- Edit card modal -->
+	<div id="edit-card" class="modal-window">
+	  	<div>
+	    	<a href="#modal-close" title="Close" class="modal-close">Close</a>
+	    	<h1>Edit card</h1>
+	    	<form id="editcolumn" enctype="multipart/form-data">
+				Card name <input id="edit_caname" type="text" name="card_name">
+	       		<br />
+	       		<br />
+	       		Card description <input id="edit_cades" type="text" name="card_description">
+	       		<br />
+	       		<br />
+		    </form>
+		    <div class="container">
+			  	<div class="interior" onclick="editCard()">
 			  		<br>
 			    	<a class="btn" href="#modal-close">Edit</a>
 			  	</div>

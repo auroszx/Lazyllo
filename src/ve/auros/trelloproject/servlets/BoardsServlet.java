@@ -104,14 +104,14 @@ public class BoardsServlet extends HttpServlet {
 				if (dbc.execute(pr.getValue("setboardperm"), myVars.toArray())) { 
 					json.put("status", 200)
 						.put("msg", "Board created successfully")
-						.put("redirect", "/TrelloProject/Main/");
+						/*.put("redirect", "/TrelloProject/Main/")*/;
 					out.print(json.toString());
 				}
 				//Deletion should happen in case of failure?
 				else {
 					json.put("status", 500)
 						.put("msg", "Error setting board permissions")
-						.put("redirect", "/TrelloProject/Main/");
+						/*.put("redirect", "/TrelloProject/Main/")*/;
 					out.print(json.toString());
 				}
 			}
@@ -119,7 +119,7 @@ public class BoardsServlet extends HttpServlet {
 				//Deletion should happen in case of failure?
 				json.put("status", 500)
 					.put("msg", "Error getting board info for permissions")
-					.put("redirect", "/TrelloProject/Main/");
+					/*.put("redirect", "/TrelloProject/Main/")*/;
 				out.print(json.toString());
 			}
 			
@@ -161,13 +161,13 @@ public class BoardsServlet extends HttpServlet {
 				if (dbc.execute(pr.getValue("deleteboard"), board_id)) {
 					json.put("status", 200)
 						.put("msg", "Board deleted succesfully")
-						.put("redirect", "/TrelloProject/Main/");
+						/*.put("redirect", "/TrelloProject/Main/")*/;
 					out.print(json.toString());
 				}
 				else {
 					json.put("status", 500)
 						.put("msg", "Error deleting board")
-						.put("redirect", "/TrelloProject/Main/");
+						/*.put("redirect", "/TrelloProject/Main/")*/;
 					out.print(json.toString());
 				}
 				
@@ -175,7 +175,7 @@ public class BoardsServlet extends HttpServlet {
 			else {
 				json.put("status", 500)
 					.put("msg", "Error deleting board permissions")
-					.put("redirect", "/TrelloProject/Main/");
+					/*.put("redirect", "/TrelloProject/Main/")*/;
 				out.print(json.toString());
 			}
 		}
@@ -219,14 +219,14 @@ public class BoardsServlet extends HttpServlet {
 			if (dbc.execute(pr.getValue("editboard"), board_name, board_id)) {
 				json.put("status", 200)
 					.put("msg", "Board edited succesfully")
-					.put("redirect", "/TrelloProject/Main/");
+					/*.put("redirect", "/TrelloProject/Main/")*/;
 				out.print(json.toString());
 				
 			} 
 			else {
 				json.put("status", 500)
 					.put("msg", "Error editing board")
-					.put("redirect", "/TrelloProject/Main/"); //Maybe I shouldn't do this...
+					/*.put("redirect", "/TrelloProject/Main/")*/;
 				out.print(json.toString());
 			}
 		}
