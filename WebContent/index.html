@@ -6,8 +6,25 @@
 <link rel="stylesheet" href="my.css">
 </head>
 <body>
-	<h1 id="title">Lazyllo</h1>
+	<h1 id="title" onclick="javascript:window.location.href='/TrelloProject/'">Lazyllo</h1>
 	<h4 id="subtitle">A Trello Project</h4>
+	<div style="margin-top: -1%; margin-right: 45%; float: right;">
+		<button onclick="javascript:window.location.href='/TrelloProject/Main/'">Enter as guest</button>
+		<!--
+		<button style="float:right; height: 27px;" onclick="getBoardsByName()">
+			<div id="searchbtn" style="-webkit-transform: rotate(45deg); 
+							               -moz-transform: rotate(45deg); 
+							                 -o-transform: rotate(45deg);
+							                    transform: rotate(45deg);
+							                    font-size: 16px;
+							                    margin-top: -5px;">
+				&#9906;
+			</div>
+		</button>
+		
+		<input id="searchinput" type="text" placeholder="Search for boards...">
+		-->
+	</div>
 	<div class="signup">
 		<h4>Signup</h4>
 		<form id="signup" enctype="multipart/form-data">

@@ -1,5 +1,7 @@
 #title, #subtitle, .mybutton {
 	text-align: center;
+    text-decoration: none;
+    cursor: pointer;
 }
 
 .signup {
@@ -66,6 +68,11 @@ input, select {
     text-decoration: none;
     color: black;
     font-size: 20px;
+}
+
+#logout {
+    cursor: pointer;
+    text-decoration: none;
 }
 
 .column {

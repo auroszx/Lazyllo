@@ -90,6 +90,7 @@ public class BoardsServlet extends HttpServlet {
 				}
 				Object[] paramArray = parameters2.toArray();
 				String board_name = (String) paramArray[0];
+				board_name = board_name.replace("%20", " ");
 				
 				System.out.println("Board search... "+board_name);
 				

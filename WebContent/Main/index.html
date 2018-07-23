@@ -8,7 +8,7 @@
 <script type="text/javascript" src="../js/main.js"></script>
 </head>
 <body onload="getBoards()">
-	<h1 id="title">Lazyllo</h1>
+	<h1 id="title" onclick="javascript:window.location.href='/TrelloProject/'">Lazyllo</h1>
 	<h4 id="subtitle">A Trello Project</h4>
 	
 	<h4 id="module" style="text-align: center;">Boards</h4><br>
@@ -16,7 +16,7 @@
 	<div class="container">
 	  	<div class="interior">
 	    	<a id="createbtn" class="btn" href="#create-board">Create board</a>
-	    	<a class="btn" onclick="logout()">Logout</a>
+	    	<a id="logout" class="btn" onclick="logout()">Logout</a>
 	  	</div>
 	</div>
 

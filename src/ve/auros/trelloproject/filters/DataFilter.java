@@ -70,7 +70,7 @@ public class DataFilter implements Filter {
 			
 		}
 		else {
-			if (request.getRequestURI().contains("Boards")) {
+			if (request.getRequestURI().contains("Columns")) {
 				String board_id = request.getPathInfo().substring(1, request.getPathInfo().length());
 				String user_id = (String) session.getAttribute("user_id");
 				
