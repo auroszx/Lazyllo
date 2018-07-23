@@ -80,6 +80,33 @@ public class BoardsServlet extends HttpServlet {
 			
 			
 			}
+			if (request.getPathInfo().contains("boardsearch")) {
+				
+				ArrayList<String> parameters2 = new ArrayList<String>();
+				
+				String[] queriesFromString = request.getQueryString().split("&");
+				for (String params: queriesFromString) {
+					parameters2.add(params.split("=")[1]);
+				}
+				Object[] paramArray = parameters2.toArray();
+				String board_name = (String) paramArray[0];
+				
+				System.out.println("Board search... "+board_name);
+				
+				if (dbc.execute(pr.getValue("getboardsbyname"), board_name)) {
+					json.put("status", 200)
+						.put("msg", "Boards by name retrieved successfully")
+						.put("boards", dbc.getTable());
+					out.print(json.toString());
+				}
+				else {
+					json.put("status", 500)
+						.put("msg", "Could not search for boards");
+					out.print(json.toString());
+				}
+			
+			
+			}
 			
 			
 		}
@@ -121,53 +148,55 @@ public class BoardsServlet extends HttpServlet {
 		response.setContentType("application/json");
 		response.setCharacterEncoding("UTF-8");
 		
-		if (request.getPathInfo().equals("/setperm")) {
-			int board_id = Integer.parseInt(request.getParameter("board_id"));
-			String perm_username = request.getParameter("perm_username");
-			int perm_type = Integer.parseInt(request.getParameter("perm_type"));
-			
-			dbc.execute(pr.getValue("getboardpermbyadmin"), board_id);
-			
-			if ((perm_type == 2 && dbc.getTable().length() >= 1) || (perm_type == 1)) {
-			
-				if (dbc.execute(pr.getValue("getboardpermother"), board_id, perm_username)) {
-					if (dbc.getTable().length() == 0) {
-						if (dbc.execute(pr.getValue("addboardperm"), perm_type, board_id, perm_username)) {
-							json.put("status", 200)
-								.put("msg", "Board permissions applied successfully");
-							out.print(json.toString());
+		if (request.getPathInfo() != null) {
+			if (request.getPathInfo().equals("/setperm")) {
+				int board_id = Integer.parseInt(request.getParameter("board_id"));
+				String perm_username = request.getParameter("perm_username");
+				int perm_type = Integer.parseInt(request.getParameter("perm_type"));
+				
+				dbc.execute(pr.getValue("getboardpermbyadmin"), board_id);
+				
+				if ((perm_type == 2 && dbc.getTable().length() >= 1) || (perm_type == 1)) {
+				
+					if (dbc.execute(pr.getValue("getboardpermother"), board_id, perm_username)) {
+						if (dbc.getTable().length() == 0) {
+							if (dbc.execute(pr.getValue("addboardperm"), perm_type, board_id, perm_username)) {
+								json.put("status", 200)
+									.put("msg", "Board permissions applied successfully");
+								out.print(json.toString());
+							}
+							else {
+								json.put("status", 500)
+									.put("msg", "Could not apply board permissions");
+								out.print(json.toString());
+							}
 						}
 						else {
-							json.put("status", 500)
-								.put("msg", "Could not apply board permissions");
-							out.print(json.toString());
+							if (dbc.execute(pr.getValue("updateboardperm"), perm_type, board_id, perm_username)) {
+								json.put("status", 200)
+									.put("msg", "Board permissions updated successfully");
+								out.print(json.toString());
+							}
+							else {
+								json.put("status", 500)
+									.put("msg", "Could not update board permissions");
+								out.print(json.toString());
+							}
 						}
 					}
 					else {
-						if (dbc.execute(pr.getValue("updateboardperm"), perm_type, board_id, perm_username)) {
-							json.put("status", 200)
-								.put("msg", "Board permissions updated successfully");
-							out.print(json.toString());
-						}
-						else {
-							json.put("status", 500)
-								.put("msg", "Could not update board permissions");
-							out.print(json.toString());
-						}
+						json.put("status", 200)
+							.put("msg", "Error managing permissions for this board");
+						out.print(json.toString());
 					}
 				}
 				else {
-					json.put("status", 200)
-						.put("msg", "Error managing permissions for this board");
+					json.put("status", 500)
+						.put("msg", "Can change permissions. There must be at least one admin per board");
 					out.print(json.toString());
 				}
+				
 			}
-			else {
-				json.put("status", 500)
-					.put("msg", "Can change permissions. There must be at least one admin per board");
-				out.print(json.toString());
-			}
-			
 		}
 		
 		else {

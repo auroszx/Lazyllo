@@ -19,10 +19,17 @@ document.onclick = function(e) {
 	//Click detection for GET and DELETE.
 	if (e.target.parentElement != undefined) {
 		//Clicked the content.
-		if (e.target.getAttribute("class") == "card" || e.target.getAttribute("class") == "cardcontent") {
+		if ((e.target.getAttribute("class") == "card" || e.target.getAttribute("class") == "cardcontent") && e.target.getAttribute("type") == "board") {
 		  refid = e.target.getAttribute("refid");
 		  console.log("Getting columns...");
-		  getColumns(refid);
+		  var bname3 = "";
+		  if (e.target.getAttribute("class") == "card") {
+		  	bname3 = e.target.childNodes[2].firstChild.innerText;
+		  }
+		  else if (e.target.getAttribute("class") == "cardcontent") {
+		  	bname3 = e.target.firstChild.innerText;
+		  }
+		  getColumns(refid, bname3);
 		}
 		//Clicked the create card button.
 		if (e.target.parentElement.getAttribute("class") == "card column" && e.target.getAttribute("class") == "create-card") {
@@ -231,9 +238,10 @@ function editBoard() {
 }
 
 //Gets columns for a board
-function getColumns(board_id) {
+function getColumns(board_id, board_name) {
 	var boardlist = document.getElementById("boardlist");
 	localStorage.setItem("board_id", board_id);
+	localStorage.setItem("board_name", board_name);
 
 	xhr("GET", "", "/TrelloProject/Main/Data/ColumnsServlet/"+board_id, function(res) {
 		var data = JSON.parse(res);
@@ -374,7 +382,7 @@ function getColumns(board_id) {
 
 		var module = document.getElementById("module");
 		module.innerHTML = "<a href='/TrelloProject/Main/'>"+module.innerHTML+"</a>";
-		module.innerHTML = module.innerHTML+" > Board info"; //Needs tweaking
+		module.innerHTML = module.innerHTML+" > "+board_name; //Needs tweaking
 
 		//<a id="permbtn" class="btn" href="#board-perm">Board permissions</a>
 
@@ -439,10 +447,12 @@ function setBoardPerm() {
 	var boardperm = document.getElementById("boardperm");
 	var fd = new FormData(boardperm);
 	fd.append("board_id", localStorage.getItem("board_id"));
-	xhr("POST", fd, "/TrelloProject/BoardsServlet/setperm", function() {
-		handleResponse;
-		getBoardPermList();
-	});
+	if (document.getElementById("perm_username").value != "") {
+		xhr("POST", fd, "/TrelloProject/BoardsServlet/setperm", function() {
+			handleResponse;
+			getBoardPermList();
+		});
+	}
 }
 
 //Gets the board permission list
@@ -494,6 +504,62 @@ function deleteBoardPerm(user_id) {
 	xhr("DELETE", "", "/TrelloProject/BoardsServlet/deleteperm?user_id="+user_id+"&board_id="+board_id, function() {
 		handleResponse;
 		getBoardPermList();
+	});
+}
+
+function getBoardsByName() {
+	var searchinput = document.getElementById("searchinput");
+	var board_name = "%"+searchinput.value+"%";
+
+	var boardlist = document.getElementById("boardlist");
+
+	while (boardlist.firstChild) {
+	    boardlist.removeChild(boardlist.firstChild);
+	}
+
+	xhr("GET", "", "/TrelloProject/BoardsServlet/boardsearch?board_name="+board_name, function(res) {
+		handleResponse(res);
+
+		var data = JSON.parse(res);
+		var boards = data.boards;
+		handleResponse(res);
+
+		for (var i in boards) {
+
+			var boarddiv = document.createElement("div");
+			boarddiv.setAttribute("class", "card");
+			boarddiv.setAttribute("type", "board");
+
+			var boarddivcontent = document.createElement("div");
+			boarddivcontent.setAttribute("class", "cardcontent");
+			boarddivcontent.setAttribute("type", "board");
+			var h4 = document.createElement("h4");
+			h4.innerHTML = "<b>"+boards[i].board_name+"</b>";
+			boarddivcontent.appendChild(h4);
+
+			var a2 = document.createElement("a");
+			a2.innerHTML = "&#x2716";
+			a2.setAttribute("class", "erase");
+			boarddiv.appendChild(a2);
+
+			var a1 = document.createElement("a");
+			a1.innerHTML = "&#x270D";
+			a1.setAttribute("class", "edit");
+			a1.setAttribute("href", "#edit-board");
+			boarddiv.appendChild(a1);
+
+
+			var p = document.createElement("p");
+			p.innerHTML = "Created: "+boards[i].board_created_at;
+
+			boarddiv.setAttribute("refid", boards[i].board_id);
+			boarddivcontent.setAttribute("refid", boards[i].board_id);
+
+			boarddivcontent.appendChild(p);
+			boarddiv.appendChild(boarddivcontent);
+			boardlist.appendChild(boarddiv);
+			
+		}
 	});
 }
 
