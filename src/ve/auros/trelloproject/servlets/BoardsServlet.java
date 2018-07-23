@@ -48,17 +48,54 @@ public class BoardsServlet extends HttpServlet {
 		dbc = new DBConnection(pr.getValue("pgurl"), pr.getValue("pguser"), pr.getValue("pgpass"), pr.getValue("driver"));
 		dbc.connect();
 		
-		if (dbc.execute(pr.getValue("getboards"))) {
-			response.setContentType("application/json");
-			response.setCharacterEncoding("UTF-8");
-			System.out.println("Boards requested.");
-			System.out.println(dbc.getTable());
-			json.put("status", 200)
-				.put("msg", "Boards returned successfully.")
-				.put("boards", dbc.getTable());
-			out.print(json.toString());
-			System.out.println("Boards sent.");
+		response.setContentType("application/json");
+		response.setCharacterEncoding("UTF-8");
+		
+		
+		if (request.getPathInfo() != null) {
+			if (request.getPathInfo().contains("getpermlist") ) {
+			
+				ArrayList<String> parameters2 = new ArrayList<String>();
+				
+				String[] queriesFromString = request.getQueryString().split("&");
+				for (String params: queriesFromString) {
+					parameters2.add(params.split("=")[1]);
+				}
+				Object[] paramArray = parameters2.toArray();
+				int board_id = Integer.parseInt((String) paramArray[0]);
+				
+				System.out.println("Get perm list?");
+				
+				if (dbc.execute(pr.getValue("getboardpermlist"), board_id)) {
+					json.put("status", 200)
+						.put("msg", "Board permissions retrieved successfully")
+						.put("perms", dbc.getTable());
+					out.print(json.toString());
+				}
+				else {
+					json.put("status", 500)
+						.put("msg", "Could not retrieve board permission list");
+					out.print(json.toString());
+				}
+			
+			
+			}
+			
+			
 		}
+		else {
+			if (dbc.execute(pr.getValue("getboards"))) {
+				System.out.println("Boards requested.");
+				System.out.println(dbc.getTable());
+				json.put("status", 200)
+					.put("msg", "Boards returned successfully.")
+					.put("boards", dbc.getTable());
+				out.print(json.toString());
+				System.out.println("Boards sent.");
+			}
+		}
+		
+		
 		
 	}
 
@@ -81,13 +118,58 @@ public class BoardsServlet extends HttpServlet {
 		dbc = new DBConnection(pr.getValue("pgurl"), pr.getValue("pguser"), pr.getValue("pgpass"), pr.getValue("driver"));
 		dbc.connect();
 		
-		if (request.getPathInfo().substring(1, request.getPathInfo().length()) == "setperm") {
+		response.setContentType("application/json");
+		response.setCharacterEncoding("UTF-8");
+		
+		if (request.getPathInfo().equals("/setperm")) {
 			int board_id = Integer.parseInt(request.getParameter("board_id"));
 			String perm_username = request.getParameter("perm_username");
-			String perm_type = request.getParameter("perm_type");
+			int perm_type = Integer.parseInt(request.getParameter("perm_type"));
 			
-			//KEEP WORKING HERE
+			dbc.execute(pr.getValue("getboardpermbyadmin"), board_id);
+			
+			if ((perm_type == 2 && dbc.getTable().length() >= 1) || (perm_type == 1)) {
+			
+				if (dbc.execute(pr.getValue("getboardpermother"), board_id, perm_username)) {
+					if (dbc.getTable().length() == 0) {
+						if (dbc.execute(pr.getValue("addboardperm"), perm_type, board_id, perm_username)) {
+							json.put("status", 200)
+								.put("msg", "Board permissions applied successfully");
+							out.print(json.toString());
+						}
+						else {
+							json.put("status", 500)
+								.put("msg", "Could not apply board permissions");
+							out.print(json.toString());
+						}
+					}
+					else {
+						if (dbc.execute(pr.getValue("updateboardperm"), perm_type, board_id, perm_username)) {
+							json.put("status", 200)
+								.put("msg", "Board permissions updated successfully");
+							out.print(json.toString());
+						}
+						else {
+							json.put("status", 500)
+								.put("msg", "Could not update board permissions");
+							out.print(json.toString());
+						}
+					}
+				}
+				else {
+					json.put("status", 200)
+						.put("msg", "Error managing permissions for this board");
+					out.print(json.toString());
+				}
+			}
+			else {
+				json.put("status", 500)
+					.put("msg", "Can change permissions. There must be at least one admin per board");
+				out.print(json.toString());
+			}
+			
 		}
+		
 		else {
 			while (parameters.hasMoreElements()) {
 				param = (String) parameters.nextElement();
@@ -153,21 +235,42 @@ public class BoardsServlet extends HttpServlet {
 		DBConnection dbc;
 		PropertiesReader pr = PropertiesReader.getInstance();
 		
-		int board_id = Integer.parseInt(request.getPathInfo().substring(1, request.getPathInfo().length()));
-		
 		dbc = new DBConnection(pr.getValue("pgurl"), pr.getValue("pguser"), pr.getValue("pgpass"), pr.getValue("driver"));
 		dbc.connect();
 		
 		response.setContentType("application/json");
 		response.setCharacterEncoding("UTF-8");
 		
-		System.out.println("Board to be deleted, ID: "+board_id);
 		if (request.getPathInfo() == null) {
 			json.put("status", 406)
 				.put("msg", "No board_id was supplied with the request");
 			out.print(json.toString());
 		}
+		else if (request.getPathInfo().contains("deleteperm")) {
+			
+			ArrayList<String> parameters2 = new ArrayList<String>();
+			
+			String[] queriesFromString = request.getQueryString().split("&");
+			for (String params: queriesFromString) {
+				parameters2.add(params.split("=")[1]);
+			}
+			Object[] paramArray = parameters2.toArray();
+			int user_id = Integer.parseInt((String) paramArray[0]);
+			int board_id = Integer.parseInt((String) paramArray[1]);
+			
+			if (dbc.execute(pr.getValue("deleteboardperm"), board_id, user_id)) {
+				json.put("status", 200)
+					.put("msg", "Board permission deleted succesfully");
+				out.print(json.toString());
+			}
+			else {
+				json.put("status", 500)
+					.put("msg", "Error deleting board permission");
+				out.print(json.toString());
+			}
+		}
 		else {
+			int board_id = Integer.parseInt(request.getPathInfo().substring(1, request.getPathInfo().length()));
 			if (dbc.execute(pr.getValue("deleteuserboard"), board_id)) {
 				if (dbc.execute(pr.getValue("deleteboard"), board_id)) {
 					json.put("status", 200)

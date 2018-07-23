@@ -74,6 +74,8 @@ public class DataFilter implements Filter {
 				String board_id = request.getPathInfo().substring(1, request.getPathInfo().length());
 				String user_id = (String) session.getAttribute("user_id");
 				
+				System.out.println("Request URI: "+request.getRequestURI());
+				
 				if(dbc.execute(pr.getValue("getboardperm"), Integer.parseInt(board_id), Integer.parseInt(user_id))) {
 					if (dbc.getTable().length() > 0) {
 						

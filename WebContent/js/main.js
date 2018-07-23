@@ -16,30 +16,38 @@ document.onclick = function(e) {
 	// console.log(e.target.parentElement.parentElement.getAttribute("class"));
 	// console.log(e.target.getAttribute("class"));
 	
-	//Clicked the content.
-	if (e.target.getAttribute("class") == "card" || e.target.getAttribute("class") == "cardcontent") {
-	  refid = e.target.getAttribute("refid");
-	  console.log("Getting columns...");
-	  getColumns(refid);
+	//Click detection for GET and DELETE.
+	if (e.target.parentElement != undefined) {
+		//Clicked the content.
+		if (e.target.getAttribute("class") == "card" || e.target.getAttribute("class") == "cardcontent") {
+		  refid = e.target.getAttribute("refid");
+		  console.log("Getting columns...");
+		  getColumns(refid);
+		}
+		//Clicked the create card button.
+		if (e.target.parentElement.getAttribute("class") == "card column" && e.target.getAttribute("class") == "create-card") {
+		  refid = e.target.parentElement.getAttribute("refid");
+		}
+		//Clicked the delete button.
+		if (e.target.getAttribute("class") == "erase") {
+		  refid = e.target.parentElement.getAttribute("refid");
+		  if (e.target.parentElement.getAttribute("type") == "board") {
+		  	deleteBoard(refid);
+		  }
+		  else if (e.target.parentElement.getAttribute("type") == "column") {
+		  	deleteColumn(refid);
+		  }
+		  else if (e.target.parentElement.getAttribute("type") == "card") {
+		  	deleteCard(refid);
+		  }
+		  else if (e.target.parentElement.parentElement.parentElement.getAttribute("type") == "perm") {
+		  	refid = e.target.parentElement.parentElement.parentElement.getAttribute("refid");
+		  	deleteBoardPerm(refid);
+		  }
+		  
+		}
 	}
-	//Clicked the create card button.
-	if (e.target.parentElement.getAttribute("class") == "card column" && e.target.getAttribute("class") == "create-card") {
-	  refid = e.target.parentElement.getAttribute("refid");
-	}
-	//Clicked the delete button.
-	if (e.target.getAttribute("class") == "erase") {
-	  refid = e.target.parentElement.getAttribute("refid");
-	  if (e.target.parentElement.getAttribute("type") == "board") {
-	  	deleteBoard(refid);
-	  }
-	  else if (e.target.parentElement.getAttribute("type") == "column") {
-	  	deleteColumn(refid);
-	  }
-	  else if (e.target.parentElement.getAttribute("type") == "card") {
-	  	deleteCard(refid);
-	  }
-	  
-	}
+
 	//Clicked the edit button.
 	if (e.target.getAttribute("class") == "edit") {
 		//For boards.
@@ -83,18 +91,13 @@ function logResponse(text) {
 //Handles all responses client-side and preforms appropiate actions.
 function handleResponse(response) {
 	var res = JSON.parse(response);
-	/*if (res.status >= 200 && res.status < 300) {
-		if (res.msg != undefined && res.msg != null) {
-			console.log(res.msg);
-		}	
+	
+	if ((res.status >= 200 && res.status < 300) || res.status == undefined) {
+		console.log(res);
 	}
 	else {
-		console.log("Error: ", res.status);
-		console.log("Error message: ", res.msg);
-		console.log("Full response: ", res);	
-	}*/
-	//logResponse(res);
-	console.log(res);
+		console.error(res);	
+	}
 
 	if (res.redirect != undefined && res.redirect != null) {
 		redirect(res.redirect);	
@@ -109,6 +112,11 @@ function handleResponse(response) {
 //Redirects the hell out of your browser.
 function redirect(location) {
 	window.location.href = location;
+}
+
+//Glue code to append elements after another.
+function insertAfter(newNode, referenceNode) {
+    referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
 }
 
 //Signs up new users.
@@ -225,7 +233,7 @@ function editBoard() {
 //Gets columns for a board
 function getColumns(board_id) {
 	var boardlist = document.getElementById("boardlist");
-	localstorage.setItem("board_id", board_id);
+	localStorage.setItem("board_id", board_id);
 
 	xhr("GET", "", "/TrelloProject/Main/Data/ColumnsServlet/"+board_id, function(res) {
 		var data = JSON.parse(res);
@@ -368,6 +376,17 @@ function getColumns(board_id) {
 		module.innerHTML = "<a href='/TrelloProject/Main/'>"+module.innerHTML+"</a>";
 		module.innerHTML = module.innerHTML+" > Board info"; //Needs tweaking
 
+		//<a id="permbtn" class="btn" href="#board-perm">Board permissions</a>
+
+		var permbtn = document.createElement("a");
+		permbtn.setAttribute("id", "permbtn");
+		permbtn.setAttribute("class", "btn");
+		permbtn.setAttribute("href", "#board-perm");
+		permbtn.setAttribute("style", "margin-left: 4px;");
+		permbtn.setAttribute("onclick", "getBoardPermList()");
+		permbtn.innerHTML = "Board permissions";
+
+		insertAfter(permbtn, createbtn);
 
 	});
 }
@@ -420,5 +439,61 @@ function setBoardPerm() {
 	var boardperm = document.getElementById("boardperm");
 	var fd = new FormData(boardperm);
 	fd.append("board_id", localStorage.getItem("board_id"));
-	xhr("POST", fd, "/TrelloProject/BoardsServlet/setperm", handleResponse);
+	xhr("POST", fd, "/TrelloProject/BoardsServlet/setperm", function() {
+		handleResponse;
+		getBoardPermList();
+	});
 }
+
+//Gets the board permission list
+function getBoardPermList() {
+	var permlist = document.getElementById("permlist");
+	var board_id = localStorage.getItem("board_id");
+
+	xhr("GET", "", "/TrelloProject/BoardsServlet/getpermlist?board_id="+board_id, function(res) {
+		var data = JSON.parse(res);
+		var perms = data.perms;
+		handleResponse(res);
+
+		while (permlist.firstChild) {
+		    permlist.removeChild(permlist.firstChild);
+		}
+
+		for (var k in perms) {
+			var permdiv = document.createElement("div");
+			permdiv.setAttribute("refid", perms[k].user_id);
+			permdiv.setAttribute("type", "perm");
+
+			var permtype = "";
+			if (perms[k].type_board_user_id == 1) {
+				permtype = "Board Master";
+			}
+			else {
+				permtype = "Collaborator";
+			}
+
+			var permp = document.createElement("span");
+			permp.innerHTML = "<pre style='margin-left: -15%;font-family: Arial'>		"+perms[k].user_username+"		"+permtype+"<a class='erase' style='margin-top: -18px'>&#x2716</a></pre>";
+			permdiv.appendChild(permp);
+
+			/*var a2_2 = document.createElement("a");
+			a2_2.innerHTML = "&#x2716";
+			a2_2.setAttribute("class", "erase");
+			permdiv.appendChild(a2_2);*/
+
+			permlist.appendChild(permdiv);
+		}
+	});
+}
+
+//Deletes board permission by user
+function deleteBoardPerm(user_id) {
+	console.log("User ID: ", user_id);
+	var board_id = localStorage.getItem("board_id");
+	console.log("Board ID: ", board_id);
+	xhr("DELETE", "", "/TrelloProject/BoardsServlet/deleteperm?user_id="+user_id+"&board_id="+board_id, function() {
+		handleResponse;
+		getBoardPermList();
+	});
+}
+

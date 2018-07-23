@@ -16,7 +16,6 @@
 	<div class="container">
 	  	<div class="interior">
 	    	<a id="createbtn" class="btn" href="#create-board">Create board</a>
-	    	<a id="permbtn" class="btn" href="#board-perm">Board permissions</a>
 	    	<a class="btn" onclick="logout()">Logout</a>
 	  	</div>
 	</div>
@@ -175,15 +174,18 @@
 	       			<option value="2">Collaborator</option>
 	       		</select>
 
-	       		<br />
-	       		<br />
 		    </form>
 		    <div class="container">
-			  	<div class="interior" onclick="editCard()">
+			  	<div class="interior" onclick="setBoardPerm()">
 			  		<br>
-			    	<a class="btn" href="#modal-close">Edit</a>
+			    	<a class="btn" href="" onclick="return false;">Apply</a>
 			  	</div>
 			</div>
+			<br />
+		    <div id="permlist">
+
+		    </div>
+		    
 	    </div>
 	</div>
 

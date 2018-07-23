@@ -72,6 +72,7 @@ public class LoginServlet extends HttpServlet {
 					System.out.println("Se viene el MD5.");
 					mh = MD5Hasher.getInstance();
 					String pass = mh.hashString(request.getParameterValues(param)[0]);
+					System.out.println("Login pass: "+pass);
 					myVars.add(pass);
 				} catch (Exception e) {
 					e.printStackTrace();

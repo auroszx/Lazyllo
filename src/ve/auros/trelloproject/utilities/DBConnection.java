@@ -77,7 +77,7 @@ public class DBConnection {
 				ps.setObject(counter, var);
 				counter++;
 			}
-			if (stmt.contains("SELECT")) {
+			if (stmt.startsWith("SELECT")) {
 				rs = ps.executeQuery();
 				executed = true;
 			}
