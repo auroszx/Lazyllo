@@ -160,7 +160,7 @@ function getBoards() {
 	    boardlist.removeChild(boardlist.firstChild);
 	}
 
-	xhr("GET", "", "/TrelloProject/BoardsServlet", function(res) {
+	xhr("GET", "", "/TrelloProject/Main/Data/BoardsServlet", function(res) {
 		var data = JSON.parse(res);
 		var boards = data.boards;
 		handleResponse(res);
@@ -210,8 +210,8 @@ function getBoards() {
 function createBoard() {
 	var createboard = document.getElementById("createboard");
 	var fd = new FormData(createboard);
-	xhr("POST", fd, "/TrelloProject/BoardsServlet", function() {
-		handleResponse;
+	xhr("POST", fd, "/TrelloProject/Main/Data/BoardsServlet", function(res) {
+		handleResponse(res);
 		getBoards();
 
 	});
@@ -219,8 +219,8 @@ function createBoard() {
 
 //Deletes a boards using its id sabed in attribute.
 function deleteBoard(board_id) {
-	xhr("DELETE", "", "/TrelloProject/BoardsServlet/"+board_id, function() {
-		handleResponse;
+	xhr("DELETE", "", "/TrelloProject/Main/Data/BoardsServlet/"+board_id, function(res) {
+		handleResponse(res);
 		getBoards();
 
 	});
@@ -230,8 +230,8 @@ function deleteBoard(board_id) {
 function editBoard() {
 	var board_name = document.getElementById("edit_name").value;
 	var board_id = refid;
-	xhr("PUT", "", "/TrelloProject/BoardsServlet/edit?board_id="+board_id+"&board_name="+board_name, function() {
-		handleResponse;
+	xhr("PUT", "", "/TrelloProject/Main/Data/BoardsServlet/edit?board_id="+board_id+"&board_name="+board_name, function(res) {
+		handleResponse(res);
 		getBoards();
 
 	});
@@ -248,11 +248,11 @@ function getColumns(board_id, board_name) {
 		var columns = data.columns;
 		handleResponse(res);
 
-		if (data.columns != undefined) {
+		while (boardlist.firstChild) {
+		    boardlist.removeChild(boardlist.firstChild);
+		}
 
-			while (boardlist.firstChild) {
-			    boardlist.removeChild(boardlist.firstChild);
-			}
+		if (data.columns != undefined) {
 
 			for (var i in columns) {
 				console.log("Creating column #", i);
@@ -427,6 +427,7 @@ function createCard() {
 	var createcard = document.getElementById("createcard");
 	var fd = new FormData(createcard);
 	fd.append("column_id", refid);
+	fd.append("board_id", localStorage.getItem("board_id"));
 	xhr("POST", fd, "/TrelloProject/Main/Data/CardsServlet", handleResponse);
 }
 
@@ -437,7 +438,7 @@ function deleteCard(card_id) {
 	xhr("DELETE", "", "/TrelloProject/Main/Data/CardsServlet/"+card_id, handleResponse);
 }
 
-//Edits a column using its id.
+//Edits a card using its id.
 function editCard() {
 	var card_description = document.getElementById("edit_cades").value;
 	var card_name = document.getElementById("edit_caname").value;
@@ -451,8 +452,8 @@ function setBoardPerm() {
 	var fd = new FormData(boardperm);
 	fd.append("board_id", localStorage.getItem("board_id"));
 	if (document.getElementById("perm_username").value != "") {
-		xhr("POST", fd, "/TrelloProject/BoardsServlet/setperm", function() {
-			handleResponse;
+		xhr("POST", fd, "/TrelloProject/Main/Data/BoardsServlet/setperm", function(res) {
+			handleResponse(res);
 			getBoardPermList();
 		});
 	}
@@ -463,7 +464,7 @@ function getBoardPermList() {
 	var permlist = document.getElementById("permlist");
 	var board_id = localStorage.getItem("board_id");
 
-	xhr("GET", "", "/TrelloProject/BoardsServlet/getpermlist?board_id="+board_id, function(res) {
+	xhr("GET", "", "/TrelloProject/Main/Data/BoardsServlet/getpermlist?board_id="+board_id, function(res) {
 		var data = JSON.parse(res);
 		var perms = data.perms;
 		handleResponse(res);
@@ -504,8 +505,8 @@ function deleteBoardPerm(user_id) {
 	console.log("User ID: ", user_id);
 	var board_id = localStorage.getItem("board_id");
 	console.log("Board ID: ", board_id);
-	xhr("DELETE", "", "/TrelloProject/BoardsServlet/deleteperm?user_id="+user_id+"&board_id="+board_id, function() {
-		handleResponse;
+	xhr("DELETE", "", "/TrelloProject/Main/Data/BoardsServlet/deleteperm?user_id="+user_id+"&board_id="+board_id, function(res) {
+		handleResponse(res);
 		getBoardPermList();
 	});
 }
@@ -520,7 +521,7 @@ function getBoardsByName() {
 	    boardlist.removeChild(boardlist.firstChild);
 	}
 
-	xhr("GET", "", "/TrelloProject/BoardsServlet/boardsearch?board_name="+board_name, function(res) {
+	xhr("GET", "", "/TrelloProject/Main/Data/BoardsServlet/boardsearch?board_name="+board_name, function(res) {
 		handleResponse(res);
 
 		var data = JSON.parse(res);

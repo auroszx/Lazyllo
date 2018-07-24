@@ -22,7 +22,7 @@ import ve.auros.trelloproject.utilities.PropertiesReader;
 /**
  * Servlet implementation class BoardsServlet
  */
-@WebServlet("/BoardsServlet/*")
+@WebServlet("/Main/Data/BoardsServlet/*")
 @MultipartConfig
 public class BoardsServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -220,7 +220,8 @@ public class BoardsServlet extends HttpServlet {
 					myVars = new ArrayList<Object>();
 					myVars.add(dbc.getTable().getJSONObject(0).getInt("board_id"));
 					myVars.add(Integer.parseInt((String) session.getAttribute("user_id")));
-					myVars.add(Integer.parseInt((String) session.getAttribute("type_id")));
+					//myVars.add(Integer.parseInt((String) session.getAttribute("type_id")));
+					myVars.add(1);
 					if (dbc.execute(pr.getValue("setboardperm"), myVars.toArray())) { 
 						json.put("status", 200)
 							.put("msg", "Board created successfully")
