@@ -9,6 +9,7 @@
 </head>
 <body onload="getBoards()">
 	<h1 id="title" onclick="javascript:window.location.href='/TrelloProject/'">Lazyllo</h1>
+	<h4 id="greetings" style="float:right"></h4>
 	<h4 id="subtitle">A Trello Project</h4>
 	
 	<h4 id="module" style="text-align: center;">Boards</h4><br>
@@ -207,12 +208,13 @@
 	<div id="card-details" class="modal-window">
 	  	<div>
 	    	<a href="#modal-close" title="Close" class="modal-close">Close</a>
-	    	<h1>Card details</h1>
-	    	<p>Something...</p>
+	    	<h1 id="cardtitle">Card details</h1>
+	    	<p id="carddescription">Something...</p>
 	    	<h4>Files</h4>
-	    	<form id="boardperm" enctype="multipart/form-data" method="POST">
+	    	<form id="fileform" enctype="multipart/form-data" method="POST">
 				Add files <input id="files" type="file" name="files" multiple> 
 		    </form>
+		    <br />
 		    <button onclick="uploadFiles()">Upload</button>
 	       	<br />
 
@@ -223,8 +225,12 @@
 	    	<div id="commentlist">
 
 		    </div>
+		    <br />
+		    <form id="commentform" enctype="multipart/form-data" method="POST">
+				<textarea id="comment_text" name="comment_text" placeholder="Leave a comment here..." rows="4" cols="55"></textarea> 
+		    </form>
 		    <div class="container">
-			  	<div class="interior" onclick="">
+			  	<div class="interior" onclick="addComment()">
 			  		<br>
 			    	<a class="btn" href="" onclick="return false;">Comment</a>
 			  	</div>

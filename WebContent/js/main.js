@@ -36,7 +36,16 @@ document.onclick = function(e) {
 		  refid = e.target.getAttribute("refid");
 		  console.log("Loading card details...");
 		  localStorage.setItem("card_id", refid);
-		  getFileList();
+		  if (e.target.getAttribute("class") == "card") {
+		  	document.getElementById("cardtitle").innerHTML = e.target.childNodes[3].childNodes[0].innerText;
+		  	document.getElementById("carddescription").innerHTML = e.target.childNodes[3].childNodes[2].innerText;
+		  }
+		  else if (e.target.getAttribute("class") == "cardcontent") {
+		  	document.getElementById("cardtitle").innerHTML = e.target.childNodes[0].innerText;
+		  	document.getElementById("carddescription").innerHTML = e.target.childNodes[2].innerText;
+		  }
+		  document.getElementById("comment_text").values = "";
+		  chainloadComments();
 		  redirect("/TrelloProject/Main/#card-details");
 		}
 		//Clicked the create card button.
@@ -58,6 +67,10 @@ document.onclick = function(e) {
 		  else if (e.target.parentElement.parentElement.parentElement.getAttribute("type") == "file") {
 		  	refid = e.target.parentElement.parentElement.parentElement.getAttribute("refid");
 		  	deleteFile(refid);
+		  }
+		  else if (e.target.parentElement.parentElement.parentElement.getAttribute("type") == "comment") {
+		  	refid = e.target.parentElement.parentElement.parentElement.getAttribute("refid");
+		  	deleteComment(refid);
 		  }
 		  
 		}
@@ -366,6 +379,7 @@ function getColumns(board_id, board_name) {
 									a3_2.innerHTML = "&#x271A";
 									a3_2.setAttribute("class", "create-card");
 									a3_2.setAttribute("href", "#create-card");
+									a3_2.setAttribute("style", "display: none;");
 									boarddiv2.appendChild(a3_2);
 
 									boarddiv2.setAttribute("refid", cards[j].card_id);
@@ -637,5 +651,96 @@ function deleteFile(file_id) {
 	xhr("DELETE", "", "/TrelloProject/Main/Data/CardsServlet/deletefile?file_id="+file_id, function(res) {
 		handleResponse(res);
 		getFileList();
+	});
+}
+
+//Gets the comment list for a card.
+function getCommentList() {
+	var commentlist = document.getElementById("commentlist");
+	var card_id = localStorage.getItem("card_id");
+
+	xhr("GET", "", "/TrelloProject/Main/Data/CardsServlet/getcommentlist?card_id="+card_id, function(res) {
+		var data = JSON.parse(res);
+		var comments = data.comments;
+		handleResponse(res);
+
+		while (commentlist.firstChild) {
+		    commentlist.removeChild(commentlist.firstChild);
+		}
+
+		for (var k in comments) {
+			var commentdiv = document.createElement("div");
+			commentdiv.setAttribute("refid", comments[k].comment_id);
+			commentdiv.setAttribute("type", "comment");
+
+			var commentp = document.createElement("span");
+			commentp.innerHTML = "<pre style='margin-left: -15%;font-family: Arial'><span>		"+comments[k].comment_text+"</span>		"+"<a class='erase' style='margin-top: -18px'>&#x2716</a></pre>";
+			commentdiv.appendChild(commentp);
+
+			var commentp2 = document.createElement("span");
+			commentp2.innerHTML = "<pre style='margin-left: -15%;font-family: Arial; font-size: 13px'>		"+comments[k].user_name+" "+comments[k].user_last_name+"		"+comments[k].comment_created_at+"</pre>";
+			commentdiv.appendChild(commentp2);
+
+			commentlist.appendChild(commentdiv);
+		}
+	});
+}
+
+//Create a comment in the card.
+function addComment() {
+	var commentform = document.getElementById("commentform");
+	var fd = new FormData(commentform);
+	var card_id = localStorage.getItem("card_id");
+	fd.append("card_id", card_id);
+	fd.append("board_id", localStorage.getItem("board_id"));
+	xhr("POST", fd, "/TrelloProject/Main/Data/CardsServlet/addcomment", function(res) {
+		handleResponse(res);
+		document.getElementById("comment_text").value = "";
+		getCommentList();
+	});
+}
+
+//Deletes a comment from a card.
+function deleteComment(comment_id) {
+	console.log("Comment ID: ", comment_id);
+	xhr("DELETE", "", "/TrelloProject/Main/Data/CardsServlet/deletecomment?comment_id="+comment_id, function(res) {
+		handleResponse(res);
+		getCommentList();
+	});
+}
+
+//Chainloads comments after file list.
+function chainloadComments() {
+	var filelist = document.getElementById("filelist");
+	var card_id = localStorage.getItem("card_id");
+
+	xhr("GET", "", "/TrelloProject/Main/Data/CardsServlet/getfilelist?card_id="+card_id, function(res) {
+		var data = JSON.parse(res);
+		var files = data.files;
+		handleResponse(res);
+
+		while (filelist.firstChild) {
+		    filelist.removeChild(filelist.firstChild);
+		}
+
+		for (var k in files) {
+			var filediv = document.createElement("div");
+			filediv.setAttribute("refid", files[k].file_id);
+			filediv.setAttribute("type", "file");
+
+			var filep = document.createElement("span");
+			filep.innerHTML = "<pre style='margin-left: -15%;font-family: Arial'><span onclick='downloadFile("+'"'+files[k].file_url+'"'+")'>		"+files[k].file_name+"</span>		"+"<a class='erase' style='margin-top: -18px'>&#x2716</a></pre>";
+			filediv.appendChild(filep);
+
+			/*var a2_2 = document.createElement("a");
+			a2_2.innerHTML = "&#x2716";
+			a2_2.setAttribute("class", "erase");
+			permdiv.appendChild(a2_2);*/
+
+			filelist.appendChild(filediv);
+		}
+
+		getCommentList();
+
 	});
 }

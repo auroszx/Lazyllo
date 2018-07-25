@@ -75,13 +75,40 @@ public class CardsServlet extends HttpServlet {
 					.put("msg", "Files returned successfully.")
 					.put("files", dbc.getTable());
 				out.print(json.toString());
-				System.out.println("Columns sent.");
+				System.out.println("Files sent.");
 			}
 			else {
 				json.put("status", 500)
 					.put("msg", "Could not return files.");
 				out.print(json.toString());
 				System.out.println("Couldn't send files.");
+			}
+		}
+		else if (request.getRequestURI().contains("getcommentlist")) {
+			ArrayList<String> parameters2 = new ArrayList<String>();
+			
+			String[] queriesFromString = request.getQueryString().split("&");
+			for (String params: queriesFromString) {
+				parameters2.add(params.split("=")[1]);
+			}
+			Object[] paramArray = parameters2.toArray();
+			int card_id = Integer.parseInt((String) paramArray[0]);
+			
+			if (dbc.execute(pr.getValue("getcommentsbycard"), card_id)) {
+				
+				System.out.println("Comments requested.");
+				System.out.println(dbc.getTable());
+				json.put("status", 200)
+					.put("msg", "Comments returned successfully.")
+					.put("comments", dbc.getTable());
+				out.print(json.toString());
+				System.out.println("Comments sent.");
+			}
+			else {
+				json.put("status", 500)
+					.put("msg", "Could not return comments.");
+				out.print(json.toString());
+				System.out.println("Couldn't send comments.");
 			}
 		}
 		else {
@@ -120,6 +147,9 @@ public class CardsServlet extends HttpServlet {
 		
 		dbc = new DBConnection(pr.getValue("pgurl"), pr.getValue("pguser"), pr.getValue("pgpass"), pr.getValue("driver"));
 		dbc.connect();
+		
+		response.setContentType("application/json");
+		response.setCharacterEncoding("UTF-8");
 		
 		if (request.getRequestURI().contains("addfiles")) {
 			int card_id = Integer.parseInt(request.getParameter("card_id"));
@@ -172,6 +202,28 @@ public class CardsServlet extends HttpServlet {
 				e.printStackTrace();
 			}
 					
+		}
+		else if (request.getRequestURI().contains("addcomment")){
+			myVars.add(Integer.parseInt(request.getParameter("card_id")));
+			myVars.add(Integer.parseInt((String) session.getAttribute("user_id")));
+			myVars.add(request.getParameter("comment_text"));
+			myVars.add(ts);
+			
+			System.out.println(myVars);
+			response.setContentType("application/json");
+			response.setCharacterEncoding("UTF-8");
+			if (dbc.execute(pr.getValue("addcomment"), myVars.toArray())) {
+				json.put("status", 200)
+					.put("msg", "Comment added successfully");
+				out.print(json.toString());
+					
+				
+			}
+			else {
+				json.put("status",  500)
+					.put("msg", "Error adding a comment");
+				out.print(json.toString());
+			}
 		}
 		else {
 			myVars.add(Integer.parseInt(request.getParameter("column_id")));
@@ -241,6 +293,27 @@ public class CardsServlet extends HttpServlet {
 			else {
 				json.put("status", 500)
 					.put("msg", "Error deleting file from card");
+				out.print(json.toString());
+			}
+		}
+		else if (request.getRequestURI().contains("deletecomment")) {
+			ArrayList<String> parameters2 = new ArrayList<String>();
+			
+			String[] queriesFromString = request.getQueryString().split("&");
+			for (String params: queriesFromString) {
+				parameters2.add(params.split("=")[1]);
+			}
+			Object[] paramArray = parameters2.toArray();
+			int comment_id = Integer.parseInt((String) paramArray[0]);
+				
+			if (dbc.execute(pr.getValue("deletecomment"), comment_id)) {
+				json.put("status", 200)
+					.put("msg", "Comment deleted succesfully");
+				out.print(json.toString());
+			}
+			else {
+				json.put("status", 500)
+					.put("msg", "Error deleting comment");
 				out.print(json.toString());
 			}
 		}
