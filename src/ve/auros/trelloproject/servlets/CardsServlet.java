@@ -1,8 +1,13 @@
 package ve.auros.trelloproject.servlets;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -11,6 +16,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
 
 import org.json.JSONObject;
 
@@ -51,21 +57,50 @@ public class CardsServlet extends HttpServlet {
 		response.setContentType("application/json");
 		response.setCharacterEncoding("UTF-8");
 		
-		if (dbc.execute(pr.getValue("getcards"))) {
+		if (request.getRequestURI().contains("getfilelist")) {
+			ArrayList<String> parameters2 = new ArrayList<String>();
 			
-			System.out.println("Cards requested.");
-			System.out.println(dbc.getTable());
-			json.put("status", 200)
-				.put("msg", "Cards returned successfully.")
-				.put("cards", dbc.getTable());
-			out.print(json.toString());
-			System.out.println("Columns sent.");
+			String[] queriesFromString = request.getQueryString().split("&");
+			for (String params: queriesFromString) {
+				parameters2.add(params.split("=")[1]);
+			}
+			Object[] paramArray = parameters2.toArray();
+			int card_id = Integer.parseInt((String) paramArray[0]);
+			
+			if (dbc.execute(pr.getValue("getfilesbycard"), card_id)) {
+				
+				System.out.println("Files requested.");
+				System.out.println(dbc.getTable());
+				json.put("status", 200)
+					.put("msg", "Files returned successfully.")
+					.put("files", dbc.getTable());
+				out.print(json.toString());
+				System.out.println("Columns sent.");
+			}
+			else {
+				json.put("status", 500)
+					.put("msg", "Could not return files.");
+				out.print(json.toString());
+				System.out.println("Couldn't send files.");
+			}
 		}
 		else {
-			json.put("status", 500)
-				.put("msg", "Could not return cards.");
-			out.print(json.toString());
-			System.out.println("Couldn't send cards.");
+			if (dbc.execute(pr.getValue("getcards"))) {
+				
+				System.out.println("Cards requested.");
+				System.out.println(dbc.getTable());
+				json.put("status", 200)
+					.put("msg", "Cards returned successfully.")
+					.put("cards", dbc.getTable());
+				out.print(json.toString());
+				System.out.println("Columns sent.");
+			}
+			else {
+				json.put("status", 500)
+					.put("msg", "Could not return cards.");
+				out.print(json.toString());
+				System.out.println("Couldn't send cards.");
+			}
 		}
 	}
 
@@ -81,32 +116,96 @@ public class CardsServlet extends HttpServlet {
 		PropertiesReader pr = PropertiesReader.getInstance();
 		ArrayList<Object> myVars = new ArrayList<Object>();
 		HttpSession session = request.getSession();
+		LocalDateTime ts = LocalDateTime.now();
 		
 		dbc = new DBConnection(pr.getValue("pgurl"), pr.getValue("pguser"), pr.getValue("pgpass"), pr.getValue("driver"));
 		dbc.connect();
 		
-		
-		myVars.add(Integer.parseInt(request.getParameter("column_id")));
-		myVars.add(Integer.parseInt((String) session.getAttribute("user_id")));
-		myVars.add(request.getParameter("card_name"));
-		myVars.add(request.getParameter("card_description"));
-		
-		System.out.println(myVars);
-		response.setContentType("application/json");
-		response.setCharacterEncoding("UTF-8");
-		if (dbc.execute(pr.getValue("createcard"), myVars.toArray())) {
-			json.put("status", 200)
-				.put("msg", "Card created successfully")
-				.put("redirect", "/TrelloProject/Main/");
-			out.print(json.toString());
-				
+		if (request.getRequestURI().contains("addfiles")) {
+			int card_id = Integer.parseInt(request.getParameter("card_id"));
+			int user_id = Integer.parseInt((String) session.getAttribute("user_id"));
 			
+			
+			Collection<Part> files = request.getParts();
+			files.remove(files.iterator().next());
+			InputStream filecontent = null;
+			OutputStream os = null;
+			boolean success = true;
+			try {
+				String baseDir = "/home/andres/Eclipse/TrelloProject/WebContent/UploadedFiles";
+				for (Part file : files) {
+					filecontent = file.getInputStream();
+					os = new FileOutputStream(baseDir + "/" + this.getFileName(file));
+					int read = 0;
+					byte[] bytes = new byte[1024];
+					while ((read = filecontent.read(bytes)) != -1) {
+						os.write(bytes, 0, read);
+					}
+					if (filecontent != null) {
+						filecontent.close();
+					}
+					if (os != null) {
+						os.close();
+					}
+					String file_name = this.getFileName(file);
+					String file_url = "UploadedFiles/"+this.getFileName(file);
+					if (dbc.execute(pr.getValue("addfile"), card_id, user_id, file_url, ts, file_name)) {
+						success = true;
+					}
+					else {
+						success = false;
+						break;
+					}
+					
+				}
+				if (success) {
+					json.put("status", 200)
+						.put("msg", "Files added successfully");
+					out.print(json.toString());
+				}
+				else {
+					json.put("status", 500)
+						.put("msg", "There was a problem adding some files to the card");
+					out.print(json.toString());
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+					
 		}
 		else {
-			json.put("status",  500)
-				.put("msg", "Error creating a new card");
-			out.print(json.toString());
+			myVars.add(Integer.parseInt(request.getParameter("column_id")));
+			myVars.add(Integer.parseInt((String) session.getAttribute("user_id")));
+			myVars.add(request.getParameter("card_name"));
+			myVars.add(request.getParameter("card_description"));
+			
+			System.out.println(myVars);
+			response.setContentType("application/json");
+			response.setCharacterEncoding("UTF-8");
+			if (dbc.execute(pr.getValue("createcard"), myVars.toArray())) {
+				json.put("status", 200)
+					.put("msg", "Card created successfully")
+					.put("redirect", "/TrelloProject/Main/");
+				out.print(json.toString());
+					
+				
+			}
+			else {
+				json.put("status",  500)
+					.put("msg", "Error creating a new card");
+				out.print(json.toString());
+			}
 		}
+		
+	}
+	
+	private String getFileName(Part part) {
+		for (String content : part.getHeader("content-disposition").split(";")) {
+			if (content.trim().startsWith("filename")) {
+				return content.substring(content.indexOf('=') + 1).trim().replace("\"", "");
+			}
+		}
+		return null;
 	}
 		
 	protected void doDelete(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
@@ -117,21 +216,38 @@ public class CardsServlet extends HttpServlet {
 		DBConnection dbc;
 		PropertiesReader pr = PropertiesReader.getInstance();
 		
-		int card_id = Integer.parseInt(request.getPathInfo().substring(1, request.getPathInfo().length()));
-		
 		dbc = new DBConnection(pr.getValue("pgurl"), pr.getValue("pguser"), pr.getValue("pgpass"), pr.getValue("driver"));
 		dbc.connect();
 		
 		response.setContentType("application/json");
 		response.setCharacterEncoding("UTF-8");
 		
-		System.out.println("Card to be deleted, ID: "+card_id);
-		if (request.getPathInfo() == null) {
-			json.put("status", 406)
-				.put("msg", "No card_id was supplied with the request");
-			out.print(json.toString());
+		if (request.getRequestURI().contains("deletefile")) {
+				
+			ArrayList<String> parameters2 = new ArrayList<String>();
+			
+			String[] queriesFromString = request.getQueryString().split("&");
+			for (String params: queriesFromString) {
+				parameters2.add(params.split("=")[1]);
+			}
+			Object[] paramArray = parameters2.toArray();
+			int card_id = Integer.parseInt((String) paramArray[0]);
+			
+			if (dbc.execute(pr.getValue("deletefile"), card_id)) {
+				json.put("status", 200)
+					.put("msg", "File deleted from card successfully");
+				out.print(json.toString());
+			}
+			else {
+				json.put("status", 500)
+					.put("msg", "Error deleting file from card");
+				out.print(json.toString());
+			}
 		}
 		else {
+			
+			int card_id = Integer.parseInt(request.getPathInfo().substring(1, request.getPathInfo().length()));
+			
 			if (dbc.execute(pr.getValue("deletecard"), card_id)) {
 				json.put("status", 200)
 					.put("msg", "Card deleted succesfully")
@@ -144,7 +260,6 @@ public class CardsServlet extends HttpServlet {
 					.put("redirect", "/TrelloProject/Main/");
 				out.print(json.toString());
 			}
-				
 		}
 		
 		

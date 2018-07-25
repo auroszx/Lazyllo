@@ -31,6 +31,14 @@ document.onclick = function(e) {
 		  }
 		  getColumns(refid, bname3);
 		}
+		//Clicked a card.
+		if ((e.target.getAttribute("class") == "card" || e.target.getAttribute("class") == "cardcontent") && e.target.getAttribute("type") == "card") {
+		  refid = e.target.getAttribute("refid");
+		  console.log("Loading card details...");
+		  localStorage.setItem("card_id", refid);
+		  getFileList();
+		  redirect("/TrelloProject/Main/#card-details");
+		}
 		//Clicked the create card button.
 		if (e.target.parentElement.getAttribute("class") == "card column" && e.target.getAttribute("class") == "create-card") {
 		  refid = e.target.parentElement.getAttribute("refid");
@@ -47,9 +55,9 @@ document.onclick = function(e) {
 		  else if (e.target.parentElement.getAttribute("type") == "card") {
 		  	deleteCard(refid);
 		  }
-		  else if (e.target.parentElement.parentElement.parentElement.getAttribute("type") == "perm") {
+		  else if (e.target.parentElement.parentElement.parentElement.getAttribute("type") == "file") {
 		  	refid = e.target.parentElement.parentElement.parentElement.getAttribute("refid");
-		  	deleteBoardPerm(refid);
+		  	deleteFile(refid);
 		  }
 		  
 		}
@@ -567,3 +575,67 @@ function getBoardsByName() {
 	});
 }
 
+//Gets file list for a card
+function getFileList() {
+	var filelist = document.getElementById("filelist");
+	var card_id = localStorage.getItem("card_id");
+
+	xhr("GET", "", "/TrelloProject/Main/Data/CardsServlet/getfilelist?card_id="+card_id, function(res) {
+		var data = JSON.parse(res);
+		var files = data.files;
+		handleResponse(res);
+
+		while (filelist.firstChild) {
+		    filelist.removeChild(filelist.firstChild);
+		}
+
+		for (var k in files) {
+			var filediv = document.createElement("div");
+			filediv.setAttribute("refid", files[k].file_id);
+			filediv.setAttribute("type", "file");
+
+			var filep = document.createElement("span");
+			filep.innerHTML = "<pre style='margin-left: -15%;font-family: Arial'><span onclick='downloadFile("+'"'+files[k].file_url+'"'+")'>		"+files[k].file_name+"</span>		"+"<a class='erase' style='margin-top: -18px'>&#x2716</a></pre>";
+			filediv.appendChild(filep);
+
+			/*var a2_2 = document.createElement("a");
+			a2_2.innerHTML = "&#x2716";
+			a2_2.setAttribute("class", "erase");
+			permdiv.appendChild(a2_2);*/
+
+			filelist.appendChild(filediv);
+		}
+	});
+}
+
+//Uploads files for a card.
+function uploadFiles() {
+	var files = document.getElementById("files").files;
+	var fd = new FormData();
+	fd.append("card_id", localStorage.getItem("card_id"));
+
+	for (var i = 0; i < files.length; i++) {
+	  console.log('added file');
+	  var file = files[i];
+	  fd.append('files[]', file, file.name);
+	}	
+
+	xhr("POST", fd, "/TrelloProject/Main/Data/CardsServlet/addfiles", function(res) {
+		handleResponse(res);
+		getFileList();
+	});
+}
+
+//Shortcut to get a file.
+function downloadFile(urlsection) {
+	var downWindows = window.open("/TrelloProject/"+urlsection);
+}
+
+//Deletes a file from a card.
+function deleteFile(file_id) {
+	console.log("File ID: ", file_id);
+	xhr("DELETE", "", "/TrelloProject/Main/Data/CardsServlet/deletefile?file_id="+file_id, function(res) {
+		handleResponse(res);
+		getFileList();
+	});
+}

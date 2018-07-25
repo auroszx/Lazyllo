@@ -29,9 +29,9 @@ public class DBConnection {
 	}
 	
 	public DBConnection() {
-		DBConnection.pgurl = "jdbc:postgresql://localhost:5432/trello";
+		DBConnection.pgurl = "jdbc:postgresql://localhost:5432/trello2";
 		DBConnection.pguser = "postgres";
-		DBConnection.pgpass = "holaan";
+		DBConnection.pgpass = "reptile";
 		DBConnection.driver = "org.postgresql.Driver";
 	}
 	
